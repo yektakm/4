@@ -48,11 +48,11 @@ public class Sample {
         }*/
 
         int i = 0;
-        Link[] data = new Link[20];
-        for (i =0 ; i<20 ; i++){
+        Link[] data = new Link[16];
+        for (i =0 ; i<16 ; i++){
             data[i] = Simulator.trueLogic;
         }
-        data[15] = Simulator.falseLogic;
+        data[0] = Simulator.falseLogic;
 
 
 
@@ -63,8 +63,10 @@ public class Sample {
         //OR32Bit or32Bit = new OR32Bit("OR32" , "64X32");
         //AND32Bit and32Bit = new AND32Bit("And32" , "64X32");
         //Mux4X1 m1 = new Mux4X1("Mux" , "6X1");
-        Mux16X1 m2 = new Mux16X1("Mux" , "20X1");
-        m2.addInput(data);
+        //Mux16X1 m2 = new Mux16X1("Mux" , "20X1");
+        //m2.addInput(data);
+        //SignExtend16X32 s1 = new SignExtend16X32("SignEx" , "16X32");
+        //s1.addInput(data);
         //FullAdder f = new FullAdder("FA" , "3X2" , r2.flipFlops.get(0).getOutput(0) , r2.flipFlops.get(0).getOutput(0) , r1.flipFlops.get(0).getOutput(0));
         //HalfAdder h = new HalfAdder("H1" , "2X2" , r1.flipFlops.get(0).getOutput(0) , r2.flipFlops.get(0).getOutput(0));
         //DoNothing doNothing = new DoNothing("D" , "8X10" );
@@ -77,7 +79,9 @@ public class Sample {
         //and32Bit.addInput(data);
         //m1.addInput(Simulator.falseLogic , Simulator.trueLogic , Simulator.trueLogic , Simulator.trueLogic , Simulator.falseLogic , Simulator.trueLogic);
 
-        Simulator.debugger.addTrackItem(d1,d2,d3,d4,d5,d6,d7,d8, m2);
+        ControlUnit u = new ControlUnit("Control" , "6X9" , Simulator.falseLogic , Simulator.falseLogic , Simulator.falseLogic , Simulator.trueLogic , Simulator.falseLogic , Simulator.falseLogic);
+
+        Simulator.debugger.addTrackItem(d1,d2,d3,d4,d5,d6,d7,d8, u);
         Simulator.debugger.setDelay(100);
         Simulator.circuit.startCircuit("FAST");
     }
