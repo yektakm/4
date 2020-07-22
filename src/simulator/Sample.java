@@ -48,11 +48,12 @@ public class Sample {
         }*/
 
         int i = 0;
-        Link[] data = new Link[16];
-        for (i =0 ; i<16 ; i++){
-            data[i] = Simulator.trueLogic;
+        Link[] data = new Link[8];
+        for (i =0 ; i<8 ; i++){
+            data[i] = Simulator.falseLogic;
         }
-        data[0] = Simulator.falseLogic;
+        data[0] = Simulator.trueLogic;
+        data[2] = Simulator.trueLogic;
 
 
 
@@ -79,7 +80,13 @@ public class Sample {
         //and32Bit.addInput(data);
         //m1.addInput(Simulator.falseLogic , Simulator.trueLogic , Simulator.trueLogic , Simulator.trueLogic , Simulator.falseLogic , Simulator.trueLogic);
 
-        ControlUnit u = new ControlUnit("Control" , "6X9" , Simulator.falseLogic , Simulator.falseLogic , Simulator.falseLogic , Simulator.trueLogic , Simulator.falseLogic , Simulator.falseLogic);
+        //ControlUnit u = new ControlUnit("Control" , "6X9" , Simulator.falseLogic , Simulator.falseLogic , Simulator.falseLogic , Simulator.trueLogic , Simulator.falseLogic , Simulator.falseLogic);
+        //Shift2Times s = new Shift2Times("Shift" , "32X32");
+        //s.addInput(data);
+
+        ALUControlUnit u = new ALUControlUnit("U" , "8X4");
+        u.addInput(data);
+
 
         Simulator.debugger.addTrackItem(d1,d2,d3,d4,d5,d6,d7,d8, u);
         Simulator.debugger.setDelay(100);
