@@ -4,6 +4,7 @@ package simulator;
 
 import simulator.control.Simulator;
 import simulator.gates.combinational.And;
+import simulator.gates.combinational.Memory;
 import simulator.gates.combinational.Not;
 import simulator.gates.combinational.Or;
 import simulator.gates.sequential.Clock;
@@ -11,95 +12,82 @@ import simulator.gates.sequential.flipflops.DFlipFlop;
 import simulator.network.Link;
 import simulator.wrapper.wrappers.RealDFlipFlop;
 
+import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
 public class Sample {
     public static void main(String[] args) throws InterruptedException {
+        Register pc = new Register();
 
-        Register r1 = new Register();
-        Register r2 = new Register();
-        Clock c1 = new Clock("clock", 200);
-        DFlipFlop d1 = new DFlipFlop("D" ,c1.getOutput(0), Simulator.falseLogic);
-        DFlipFlop d2 = new DFlipFlop("D" ,c1.getOutput(0) , Simulator.trueLogic);
-        DFlipFlop d3 = new DFlipFlop("D" ,c1.getOutput(0), Simulator.trueLogic);
-        DFlipFlop d4 = new DFlipFlop("D" ,c1.getOutput(0), Simulator.trueLogic);
-        r1.flipFlops.add(d1);
-        r1.flipFlops.add(d2);
-        r1.flipFlops.add(d3);
-        r1.flipFlops.add(d4);
 
-        DFlipFlop d5 = new DFlipFlop("D2" ,c1.getOutput(0) , Simulator.falseLogic);
-        DFlipFlop d6 = new DFlipFlop("D2" ,c1.getOutput(0), Simulator.falseLogic);
-        DFlipFlop d7 = new DFlipFlop("D2" ,c1.getOutput(0), Simulator.falseLogic);
-        DFlipFlop d8 = new DFlipFlop("D2" ,c1.getOutput(0), Simulator.falseLogic);
-        r2.flipFlops.add(d5);
-        r2.flipFlops.add(d6);
-        r2.flipFlops.add(d7);
-        r2.flipFlops.add(d8);
+        Memory instructionMemory = new Memory("Instruction Memory ");
 
-        /*
-        for (int i = 0; i < 32; i++) {
-            DFlipFlop d1 = new DFlipFlop("d1", c1.getOutput(0), Simulator.trueLogic);
-            DFlipFlop d2 = new DFlipFlop("d2", c1.getOutput(0) , Simulator.falseLogic );
-            r1.getFlipFlops().add(d1);
-            r2.getFlipFlops().add(d2);
-            Simulator.debugger.addTrackItem(d1 , d2);
-            Simulator.debugger.setDelay(100);
-        }*/
-
-        int i = 0;
-        Link[] data = new Link[8];
-        for (i =0 ; i<8 ; i++){
-            data[i] = Simulator.falseLogic;
+        Link[] address = new Link[16];
+        for (int i = 0 ; i<16 ; i++){
+            address[i] = Simulator.falseLogic;
         }
-        data[0] = Simulator.trueLogic;
-        data[2] = Simulator.trueLogic;
-
-        Link[] first = new Link[32];
-        for (i=0 ; i<32 ; i++){
-            first[i] = Simulator.trueLogic;
-        }
-        Link[] second = new Link[32];
-        for (i=0 ; i<32 ; i++){
-            second[i] = Simulator.falseLogic;
+        Link[] data = new Link[32];
+        for (int i = 0 ; i<32 ; i++){
+            data[i] = Simulator.trueLogic;
         }
 
 
+        instructionMemory.addInput(Simulator.trueLogic);
+        instructionMemory.addInput(address);
+        instructionMemory.addInput(data);
+
+        Clock c = new Clock("c", 100);
+
+        for (int j = 0; j < 16; j++) {
+            assert false;
+            DFlipFlop d = new DFlipFlop("d"+ j, c.getOutput(0) , Simulator.falseLogic);
+            pc.getFlipFlops().add(d);
+        }
+
+        instructionMemory.addInput(Simulator.falseLogic);
+        instructionMemory.addInput(pc.dataToArray());
+
+        RegisterFile registerFile = new RegisterFile("Register file" , "49X64");
+        for (int i = 0 ; i < 32 ; i++) {
+
+            registerFile.setRf(new HashMap<Integer, Register>());
+
+            Register r = new Register();
+
+
+            for (int j = 0; j < 32; j++) {
+
+
+                DFlipFlop d = new DFlipFlop("d" + j, c.getOutput(0), Simulator.falseLogic);
+
+                //System.out.println(d);
+
+                r.getFlipFlops().add(d);
+
+            }
+            r.setClockValue(c.getOutput(0));
+            registerFile.getRf().put(i, r);
+        }
+
+        ControlUnit controlUnit = new ControlUnit("Control Unit" , "6X9");
+
+        controlUnit.addInput(instructionMemory.getOutput(0) , instructionMemory.getOutput(1) , instructionMemory.getOutput(2) , instructionMemory.getOutput(3) , instructionMemory.getOutput(4) , instructionMemory.getOutput(5) );
+
+        //write register 5 mux 2X1 to choose between instruction lines going to reg#2 regfile
+        MultiPlexer multiPlexer1 = new MultiPlexer("mux1" , "3X1" , instructionMemory.getOutput(11) , instructionMemory.getOutput(16) , controlUnit.getOutput(0));
+        MultiPlexer multiPlexer2 = new MultiPlexer("mux2" , "3X1" , instructionMemory.getOutput(12) , instructionMemory.getOutput(17) , controlUnit.getOutput(0));
+        MultiPlexer multiPlexer3 = new MultiPlexer("mux3" , "3X1" , instructionMemory.getOutput(13) , instructionMemory.getOutput(18) , controlUnit.getOutput(0));
+        MultiPlexer multiPlexer4 = new MultiPlexer("mux4" , "3X1" , instructionMemory.getOutput(14) , instructionMemory.getOutput(19) , controlUnit.getOutput(0));
+        MultiPlexer multiPlexer5 = new MultiPlexer("mux5" , "3X1" , instructionMemory.getOutput(15) , instructionMemory.getOutput(20) , controlUnit.getOutput(0));
+
+        registerFile.addInput(c.getOutput(0) , controlUnit.getOutput(8) , instructionMemory.getInput(6) , instructionMemory.getOutput(7) , instructionMemory.getOutput(8) , instructionMemory.getOutput(9) , instructionMemory.getOutput(10) , instructionMemory.getOutput(11) , instructionMemory.getOutput(12) , instructionMemory.getOutput(13) , instructionMemory.getOutput(14) , instructionMemory.getOutput(15) , multiPlexer1.getOutput(0) , multiPlexer2.getOutput(0) , multiPlexer3.getOutput(0) , multiPlexer4.getOutput(0) , multiPlexer5.getOutput(0) );
+        registerFile.addInput(data);
 
 
 
-        //Adder adder = new Adder("Adder" , "8X5" , r1.flipFlops.get(3).getOutput(0) , r1.flipFlops.get(2).getOutput(0) , r1.flipFlops.get(1).getOutput(0) , r1.flipFlops.get(0).getOutput(0) , r2.flipFlops.get(3).getOutput(0) , r2.flipFlops.get(2).getOutput(0) , r2.flipFlops.get(1).getOutput(0) , r2.flipFlops.get(0).getOutput(0));
-        //Adder adder = new Adder("Adder" , "64X33");
-        //Subtractor subtractor = new Subtractor("Sub" , "64X33");
-        //OR32Bit or32Bit = new OR32Bit("OR32" , "64X32");
-        //AND32Bit and32Bit = new AND32Bit("And32" , "64X32");
-        //Mux4X1 m1 = new Mux4X1("Mux" , "6X1");
-        //Mux16X1 m2 = new Mux16X1("Mux" , "20X1");
-        //m2.addInput(data);
-        //SignExtend16X32 s1 = new SignExtend16X32("SignEx" , "16X32");
-        //s1.addInput(data);
-        //FullAdder f = new FullAdder("FA" , "3X2" , r2.flipFlops.get(0).getOutput(0) , r2.flipFlops.get(0).getOutput(0) , r1.flipFlops.get(0).getOutput(0));
-        //HalfAdder h = new HalfAdder("H1" , "2X2" , r1.flipFlops.get(0).getOutput(0) , r2.flipFlops.get(0).getOutput(0));
-        //DoNothing doNothing = new DoNothing("D" , "8X10" );
 
-        //Dec5X32 dec5X32 = new Dec5X32("DEC", "5X9", Simulator.falseLogic , Simulator.falseLogic , Simulator.trueLogic, Simulator.falseLogic , Simulator.falseLogic);
-        //adder.addInput(data);
-        //doNothing.addInput(data);
-        //subtractor.addInput(data);
-        //or32Bit.addInput(data);
-        //and32Bit.addInput(data);
-        //m1.addInput(Simulator.falseLogic , Simulator.trueLogic , Simulator.trueLogic , Simulator.trueLogic , Simulator.falseLogic , Simulator.trueLogic);
-
-        //ControlUnit u = new ControlUnit("Control" , "6X9" , Simulator.falseLogic , Simulator.falseLogic , Simulator.falseLogic , Simulator.trueLogic , Simulator.falseLogic , Simulator.falseLogic);
-        //Shift2Times s = new Shift2Times("Shift" , "32X32");
-        //s.addInput(data);
-
-        ALUControlUnit u = new ALUControlUnit("U" , "8X4");
-        u.addInput(data);
-        
-
-        Simulator.debugger.addTrackItem(d1,d2,d3,d4,d5,d6,d7,d8, u);
-        Simulator.debugger.setDelay(100);
+        Simulator.debugger.addTrackItem(instructionMemory  , controlUnit  );
+        Simulator.debugger.setDelay(1000);
         Simulator.circuit.startCircuit("FAST");
     }
 }
