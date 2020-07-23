@@ -3,9 +3,7 @@ package simulator;
 import simulator.control.Simulator;
 import simulator.gates.sequential.Clock;
 import simulator.gates.sequential.flipflops.DFlipFlop;
-import simulator.gates.sequential.flipflops.FlipFlop;
 import simulator.network.Link;
-
 import java.util.ArrayList;
 
 public class Register{

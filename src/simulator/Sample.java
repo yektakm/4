@@ -55,6 +55,16 @@ public class Sample {
         data[0] = Simulator.trueLogic;
         data[2] = Simulator.trueLogic;
 
+        Link[] first = new Link[32];
+        for (i=0 ; i<32 ; i++){
+            first[i] = Simulator.trueLogic;
+        }
+        Link[] second = new Link[32];
+        for (i=0 ; i<32 ; i++){
+            second[i] = Simulator.falseLogic;
+        }
+
+
 
 
 
@@ -86,7 +96,7 @@ public class Sample {
 
         ALUControlUnit u = new ALUControlUnit("U" , "8X4");
         u.addInput(data);
-
+        
 
         Simulator.debugger.addTrackItem(d1,d2,d3,d4,d5,d6,d7,d8, u);
         Simulator.debugger.setDelay(100);
